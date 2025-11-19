@@ -1,38 +1,45 @@
-import axios from 'axios'
+import axios from 'axios';
 
-// Create axios instance with base configuration
+const baseURL = import.meta.env.VITE_API_BASE_URL || '';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+  baseURL,
+});
 
-// Request interceptor to attach JWT token
+// Attach Authorization header from localStorage for every request
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    return config
+    return config;
   },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+  (error) => Promise.reject(error)
+);
 
-// Response interceptor for error handling
+// Response interceptor: on 401 clear auth and dispatch a custom event so
+// the app (AuthProvider) can handle logout and navigation in-app.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized - redirect to login
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      window.location.href = '/login'
+    const status = error?.response?.status;
+    if (status === 401) {
+      try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      } catch (e) {
+        // ignore localStorage errors
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('app:auth-logout', {
+          detail: { reason: 'unauthorized' },
+        }));
+      }
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
-export default api
+export default api;
