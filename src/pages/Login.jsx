@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import api from '../api/axios'
+import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
 export default function Login({ setUser }) {
@@ -12,7 +12,7 @@ export default function Login({ setUser }) {
     e.preventDefault()
     const url = isRegister ? '/api/auth/register' : '/api/auth/login'
     try {
-      const res = await api.post(url, { email, password, name: email.split('@')[0] })
+      const res = await axios.post(url, { email, password, name: email.split('@')[0] })
       if (!isRegister) {
         localStorage.setItem('token', res.data.token)
         setUser(res.data.user)

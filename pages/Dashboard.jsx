@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import api from '../api/axios'
+import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
 export default function Dashboard({ user }) {
@@ -9,12 +9,13 @@ export default function Dashboard({ user }) {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) navigate('/login')
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     fetchAnimals()
   }, [navigate])
 
   const fetchAnimals = async () => {
     try {
-      const res = await api.get('/api/animals')
+      const res = await axios.get('/api/animals')
       setAnimals(res.data)
     } catch (err) {
       console.log(err)

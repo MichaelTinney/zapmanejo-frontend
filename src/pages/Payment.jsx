@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import api from '../api/axios'
+import axios from 'axios'
 
 export default function Payment() {
   const [slotsLeft, setSlotsLeft] = useState(200)
 
   useEffect(() => {
-    api.get('/api/payment/slots').then(res => {
+    axios.get('/api/payment/slots').then(res => {
       setSlotsLeft(200 - res.data.sold)
     }).catch(() => setSlotsLeft(137)) // fallback
   }, [])
